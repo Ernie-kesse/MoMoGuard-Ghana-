@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Create Purchase Record - MoMoGuard Ghana{% endblock %}
+
+{% block content %}
+
+<div class="card">
+
+    <h2>🛍️ Create Purchase Record</h2>
+
+    <p>
+        Record important details about a purchase between a buyer and seller.
+    </p>
+
+    <form method="POST">
+
+        <label>Item</label>
+        <input
+            type="text"
+            name="item"
+            placeholder="e.g. Samsung A15"
+            required
+        >
+
+        <label>Amount (GH₵)</label>
+        <input
+            type="number"
+            name="amount"
+            step="0.01"
+            placeholder="e.g. 1000"
+            required
+        >
+
+        <label>Seller Phone Number</label>
+        <input
+            type="tel"
+            name="seller_phone"
+            placeholder="e.g. 0551234567"
+            required
+        >
+
+        <label>Buyer Phone Number</label>
+        <input
+            type="tel"
+            name="buyer_phone"
+            placeholder="e.g. 0241234567"
+            required
+        >
+
+        <label>Transaction Reference</label>
+        <input
+            type="text"
+            name="transaction_reference"
+            placeholder="MoMo transaction reference"
+        >
+
+        <label>Payment Evidence</label>
+
+        <textarea
+            name="payment_evidence"
+            placeholder="Describe the payment evidence, e.g. seller received an MTN MoMo SMS showing GH₵1,000."
+            rows="4"
+        ></textarea>
+
+        <small>
+            Record evidence related to the payment.
+            Do not enter your MoMo PIN, OTP, or password.
+        </small>
+
+        <button type="submit" class="button primary">
+            🛡️ Create Purchase Record
+        </button>
+
+    </form>
+
+</div>
+
+{% endblock %}

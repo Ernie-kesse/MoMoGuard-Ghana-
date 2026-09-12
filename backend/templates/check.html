@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}
+Check a Number - MoMoGuard Ghana
+{% endblock %}
+
+{% block content %}
+
+<div class="card">
+
+    <h2>🔍 Check a Phone Number</h2>
+
+    <p>
+        Enter a number to check whether it has been reported.
+    </p>
+
+    <form method="POST" action="/check">
+
+        <label for="phone">Phone Number:</label>
+
+        <input
+            type="tel"
+            id="phone"
+            name="phone"
+            value="{{ phone or '' }}"
+            placeholder="e.g. 0241234567 or +233241234567"
+            maxlength="13"
+            required
+        >
+
+        <small>
+            You can enter a Ghanaian number starting with 0 or +233.
+        </small>
+
+        <button type="submit" class="button primary">
+            Check Number
+        </button>
+
+    </form>
+
+</div>
+
+
+{% if result %}
+
+<div class="card">
+
+  {% if scam_type %}
+  <div class="safety-advice">
+    {% if risk_score >= 80 %}
+        <h3>🚨 What You Should Do</h3>
+        <p>
+          Do not send money to this number.
+          Do not share your PIN, OPT, or personal information.
+          Consider reporting the number to your network provider.
+        </p>
+
+    {% elif risk_score >= 50 %}
+        <h3>⚠️ What You Should Do</h3>
+        <p>
+          Be very careful. Do not send money or share sensitive
+          information until you independently verify the situation.
+        </p>
+
+    {% elif risk_score > 0 %}
+        <h3>⚠️ What You Should Do</h3>
+        <p>
+          This number has been reported before.
+          Stay cautious and varify the person's identity before
+          taking any action.
+        </p>
+    {% endif %}
+  </div>
+
+  <div class="button-group">
+    <a href="/report?phone={{ phone }}" class="button">
+        🚨 Report This Number
+    </a>
+
+    <a href="/dashboard" class="button">
+        📊 View Report
+    </a>
+  </div>
+
+  <h2>🚨 SCAM WARNING</h2>
+
+  <p>
+    <strong>Number checked:</strong>
+  </p>
+
+  <div class="risk-section">
+
+    <p>
+      <strong>Risk Score:</strong>
+      {{ risk_score }}/100
+    </p>
+
+    <p>
+      <strong>Risk Level:</strong>
+
+      {% if risk_level == "HIGH RISK" %}
+          🔴 HIGH RISK
+      {% elif risk_level == "MEDIUM RISK" %}
+          🟢 MEDIUM RICK
+      {% elif risk_level == "LOW RISK" %}
+          🟡 LOW RISK
+      {% else %}
+          🟢 NO REPORT
+      {% endif %}
+    </p>
+
+    <div class="risk-bar">
+      <div
+        class="risk-fill"
+        style="width: {{ risk_score }}%;">
+      </div>
+
+    </div>
+
+  </div>
+  <p>
+    <strong>Reports received:</strong>
+    {{ report_count }}
+  </p>
+
+  <h3>Scam Type</h3>
+
+  <p>{{ scam_type }}</p>
+
+  <h3>Description</h3>
+
+  <p>{{ description }}</p>
+
+  <p>
+    ⚠️ <strong>Stay cautious.</strong>
+    Do not send money or share personal information 
+    until you verify the situation.
+  </p>
+
+  {% else %}
+
+  <h2>🟡 No Report Found</h2>
+
+  <p>
+    <strong>Number checked</strong>
+    {{ phone }}
+  </p>
+
+  <p>
+    {{ result }}
+  </p>
+
+  <br>
+
+  <br>
+
+    <a href="/report?phone={{ phone }}" class="button primary">
+    🚨 Report This Number
+    </a>
+    
+  {% endif %}
+
+</div>
+
+{% endif %}
+  
+{% endblock %}

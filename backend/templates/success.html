@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}
+Report Submitted - MoMoGuard Ghana
+{% endblock %}
+
+{% block content %}
+
+<div class="card success-card">
+
+    <h2>✅ Report Submitted Successfully</h2>
+
+    <p>
+        Thank you for helping protect other MoMo users.
+    </p>
+
+    <p>
+        The number you reported is:
+    </p>
+
+    <h3>📱 {{ phone }}</h3>
+
+    <p>
+        Your report has been added to the MoMoGuard Ghana
+        scam-report database.
+    </p>
+
+    <div class="next-steps">
+        <h3>What happens next?</h3>
+
+        <p>
+            Your report can help other MoMoGuard users recognize
+            suspicious numbers and avoid potential scams.
+        </p>
+
+        <p>
+            Remember: never share your MoMo PIN, OTP, or other
+            sensitive information with someone who contacts you unexpectedly.
+        </p>
+    </div>
+
+    <div class="button-group">
+
+        <a href="/check" class="button primary">
+            🔍 Check Another Number
+        </a>
+
+        <a href="/report" class="button danger">
+            🚨 Report Another Number
+        </a>
+
+        <a href="/dashboard" class="button">
+            📊 View Dashboard
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}

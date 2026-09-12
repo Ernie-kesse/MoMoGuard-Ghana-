@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}
+Report a Scam - MoMoGuard Ghana
+{% endblock %}
+
+{% block content %}
+
+<div class="card">
+
+    <h2>🚨 Report a Scam</h2>
+
+    <p>
+        Help protect other MoMo users by reporting a suspicious number.
+    </p>
+
+    <p>
+        Please provide as much accurate information as possible.
+    </p>
+
+    <form method="POST" action="/report">
+
+        <label for="phone">
+            Phone Number:
+        </label>
+
+        <input
+            type="tel"
+            id="phone"
+            name="phone"
+            value="{{ phone or ''}}"
+            placeholder="e.g. 0241234567 or +233241234567"
+            maxlength="13"
+            required
+        >
+
+        <br>
+
+        <label for="scam_type">Scam Type:</label>
+
+        <select id="scam_type" name="scam_type" required>
+            <option value="">Select scam type</option>
+            <option value="Wrong-number scam">🔁 Wrong-number scam</option>
+            <option value="Fake MoMo support">🔊 Fake MoMo support</option>
+            <option value="Fake promotion">🎁 Fake promotion</option>
+        </select>
+
+        <div class="scam-examples">
+            <p><strong>🔁 Wrong-number scam:</strong> Someone claims they sent money to you by mistake and ask you to send the money back.</p>
+
+            <p><strong>🔊 Fake MoMo support:</strong> Someone pretends to be customer support and ask for your PIN, OTP, or other sensitive informstion.</p>
+
+            <p>,<strong>🎁 Fake promotion:</strong> Someone claim you have won money, airtime, or a prize and ask you to pay or provide information.</p>
+        </div>
+
+        <small>
+            Choose the scam type that best describes what happened.
+        </small>
+
+        <br>
+
+        <label for="description">
+            What happened?
+        </label>
+
+        <textarea
+            id="description"
+            name="description"
+            rows="6"
+            maxlength="500"
+            placeholder="Describe what happened..."
+            required
+            oninput="updateCharacterCount()"
+        ></textarea>
+
+        <small>
+            <span id="character-count">0</span>/500 characters
+        </small>
+
+        <br>
+
+        <button
+            type="submit"
+            class="button danger"
+        >
+            🚨 Submit Report
+        </button>
+
+    </form>
+
+</div>
+
+{% endblock %}
+
+<script>
+    function updateCharacterCount() {
+        const description = document.getElementById("description");
+        const counter = document.getElementById("character-count");
+
+        counter.textContent = description.value.length;
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        updateCharacterCount();
+    });
+</script>

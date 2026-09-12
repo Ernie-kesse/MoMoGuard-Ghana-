@@ -1,0 +1,86 @@
+import sqlite3
+import os
+
+DATABASE = os.path.join(os.path.dirname(__file__), 'database.db')
+
+
+connection = sqlite3.connect(DATABASE)
+
+cursor = connection.cursor()
+
+
+# Scam reports table
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS scam_reports (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        phone_number TEXT NOT NULL,
+        scam_type TEXT NOT NULL,
+        description TEXT,
+        date_reported TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+''')
+
+
+# Test scam report
+cursor.execute('''
+    INSERT INTO scam_reports
+    (phone_number, scam_type, description)
+    VALUES (?, ?, ?)
+''', (
+    '0550000000',
+    'wrong-number scam',
+    'Test scam report for MoMoGuard Ghana.'
+))
+
+
+# Purchase records table
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS purchases (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        item TEXT NOT NULL,
+        amount REAL NOT NULL,
+        seller_phone TEXT NOT NULL,
+        buyer_phone TEXT NOT NULL,
+        transaction_reference TEXT,
+        transaction_date TEXT NOT NULL,
+        transaction_time TEXT NOT NULL,
+        payment_status TEXT NOT NULL DEFAULT 'Pending'
+    )
+''')
+
+# Add payment evidence column if it does not already exist
+try:
+    cursor.execute(
+        "ALTER TABLE purchases ADD COLUMN payment_evidence TEXT"
+    )
+except sqlite3.OperationalError:
+    pass
+
+# Add payment verification column if it does not already exist
+try:
+    cursor.execute(
+        "ALTER TABLE purchases ADD COLUMN payment_verification TEXT NOT NULL DEFAULT 'Not verified'"
+    )
+except sqlite3.OperationalError:
+    pass
+
+# Add dispute reason column if it does not already exist
+try:
+    cursor.execute(
+        "ALTER TABLE purchases ADD COLUMN dispute_reason TEXT"
+    )
+except sqlite3.OperationalError:
+    pass
+# Add dispute evidence column if it does not already exist
+try:
+    cursor.execute(
+        "ALTER TABLE purchases ADD COLUMN dispute_evidence TEXT"
+    )
+except sqlite3.OperationalError:
+    pass
+
+connection.commit()
+connection.close()
+
+
+print("Database created successfully!")

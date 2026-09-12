@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+
+{% block title %}
+Scam Report Dashboard - MoMoGuard Ghana
+{% endblock %}
+
+{% block content %}
+
+<div class="card">
+
+    <h2>🔎 Search Reports</h2>
+
+    <form method="GET" action="/dashboard">
+
+        <input
+            type="tel"
+            name="search"
+            placeholder="Enter phone number"
+            value="{{ search }}"
+        >
+
+        <select name="scam_type">
+
+            <option value="">All Scam Types</option>
+
+            <option value="Wrong-number scam"
+                {% if scam_filter == "Wrong-number scam" %}selected{% endif %}>
+                Wrong-number scam
+            </option>
+
+            <option value="Fake MoMo support"
+                {% if scam_filter == "Fake MoMo support" %}selected{% endif %}>
+                Fake MoMo support
+            </option>
+
+            <option value="Fake promotion"
+                {% if scam_filter == "Fake promotion" %}selected{% endif %}>
+                Fake promotion
+            </option>
+
+        </select>
+
+        <button type="submit" class="button primary">
+            Search
+        </button>
+
+        <a href="/dashboard" class="button">
+            Clear
+        </a>
+
+    </form>
+
+</div>
+
+
+<div class="card">
+
+    <h2>📊 Scam Report Dashboard</h2>
+
+    <p>
+        Overview of reports submitted to MoMoGuard Ghana.
+    </p>
+
+    <p class="dashboard-updated">
+        🕒 Last updated: {{ current_date }}
+    </p>
+
+</div>
+
+
+<div class="stats-grid">
+
+    <div class="stat-card">
+        <h3>📋 Total Reports</h3>
+        <strong>{{ total_reports }}</strong>
+    </div>
+
+    <div class="stat-card">
+        <h3>📱 Unique Numbers</h3>
+        <strong>{{ unique_numbers }}</strong>
+    </div>
+
+    <div class="stat-card">
+        <h3>🔄 Wrong-number Scams</h3>
+        <strong>{{ wrong_number_reports }}</strong>
+    </div>
+
+    <div class="stat-card">
+        <h3>🎧 Fake MoMo Support</h3>
+        <strong>{{ fake_support_reports }}</strong>
+    </div>
+
+    <div class="stat-card">
+        <h3>🎁 Fake Promotions</h3>
+        <strong>{{ fake_promotion_reports }}</strong>
+    </div>
+
+</div>
+
+
+<!-- SCAM REPORTS -->
+
+<div class="table-container">
+
+    <h2>📋 Recent Scam Reports</h2>
+
+    {% if reports %}
+
+    <table>
+
+        <thead>
+            <tr>
+                <th>Phone Number</th>
+                <th>Scam Type</th>
+                <th>Description</th>
+                <th>Date Reported</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for report in reports %}
+
+            <tr>
+
+                <td>
+                    <a href="/report/{{ report[0] }}">
+                        {{ report[0] }}
+                    </a>
+                </td>
+
+                <td>{{ report[1] }}</td>
+
+                <td>
+                    {{ report[2][:100] }}
+
+                    {% if report[2]|length > 100 %}
+                    ...
+                    {% endif %}
+                </td>
+
+                <td>{{ report[3] }}</td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+    {% else %}
+
+    <p>No scam reports have been submitted yet.</p>
+
+    {% endif %}
+
+</div>
+
+
+<!-- PURCHASE RECORDS -->
+
+<div class="card">
+
+    <h2>🛍️ Recent Purchase Records</h2>
+
+    <p>
+        Purchase records created through MoMoGuard.
+    </p>
+
+    <a href="/purchase" class="button primary">
+        ➕ Create Purchase Record
+    </a>
+
+    <div style="height: 20px;"></div>
+
+    {% if purchases %}
+
+    <div class="table-container">
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Amount</th>
+                    <th>Seller</th>
+                    <th>Buyer</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for purchase in purchases %}
+
+                <tr>
+
+                    <td>
+                        <a href="/purchase/{{ purchase[0] }}">
+                            {{ purchase[1] }}
+                        </a>
+                    </td>
+
+                    <td>
+                        GH₵{{ "%.2f"|format(purchase[2]) }}
+                    </td>
+
+                    <td>{{ purchase[3] }}</td>
+
+                    <td>{{ purchase[4] }}</td>
+
+                    <td>{{ purchase[6] }}</td>
+
+                    <td>{{ purchase[7] }}</td>
+
+                    <td>{{ purchase[8] }}</td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    {% else %}
+
+    <p>
+        No purchase records have been created yet.
+    </p>
+
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

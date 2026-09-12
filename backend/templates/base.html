@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{% block title %}MoMoGuard Ghana{% endblock %}</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+
+<body>
+
+    <header>
+
+        <h1>🛡️ MoMoGuard Ghana</h1>
+
+        <p>Pause. Verify. Protect your money.</p>
+
+        <nav class="navbar">
+
+            <div class="nav-brand">
+                <a href="/">🛡️ MoMoGuard Ghana</a>
+            </div>
+
+            <div class="nav-links">
+                <a href="/">🏡 Home</a>
+                <a href="/check">🔍 Check</a>
+                <a href="/report">🚨 Report</a>
+                <a href="/safety">📚 safety Tips</a>
+                <a href="/dashboard">📊 Dashboard</a>
+            </div>
+
+        </nav>
+
+    </header>
+
+    <main class="container">
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+
+        {% if messages %}
+
+            {% for category, message in messages %}
+
+                <div class="flash {{ category }}">
+                    {{ message }}
+                </div>
+
+            {% endfor %}
+
+        {% endif %}
+
+    {% endwith %}
+
+    {% block content %}
+
+    {% endblock %}
+
+</main>
+
+    <footer class="footer">
+
+    <p>🛡️ <strong>MoMoGuard Ghana</strong></p>
+
+    <p>
+        Pause. Verify. Protect your money.
+    </p>
+
+    <p>
+        © 2026 MoMoGuard Ghana. All rights reserved.
+    </p>
+
+    <p class="footer-disclaimer">
+        MoMoGuard Ghana is an independent safety and reporting platform.
+        A number not being reported does not guaranteethat it is safe.
+    </p>
+
+</footer>
+
+</body>
+
+</html>
