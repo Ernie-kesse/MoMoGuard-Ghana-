@@ -407,9 +407,24 @@ def update_purchase_status(purchase_id):
         return redirect("/dashboard")
 
     payment_verification, current_status = purchase_record
+    if current_status == "Completed" and payment_verification != "Verified":
+        connection.close()
+        flash(
+            "A completed purchase cannot have its payment verification changed.",
+            "error"
+        )
+        return redirect(f"/purchase/{purchase_id}")
+
     if status == "Paid" and payment_verification != "Verified":
         connection.close()
         flash("Payment must be verified before the purchase can be marked as Paid.", "error")
+        return redirect(f"/purchase/{purchase_id}")
+    if current_status == "Completed" and status != "Completed":
+        connection.close()
+        flash(
+            "A completed purchase cannot be moved back to an earlier status.",
+            "error"
+        )
         return redirect(f"/purchase/{purchase_id}")
     if status == "Delivered" and payment_verification != "Verified":
         connection.close()
@@ -549,7 +564,7 @@ def dispute_purchase(purchase_id):
     if purchase_record is None:
         connection.close()
         flash("Purchase record not found.", "error")
-    return redirect("/dashboard")
+        return redirect("/dashboard")
 
     cursor.execute(
         """
@@ -585,6 +600,17 @@ def add_dispute_evidence(purchase_id):
 
     connection = sqlite3.connect(DATABASE)
     cursor = connection.cursor()
+
+    cursor.execute(
+    "SELECT id FROM purchases WHERE id = ?",
+    (purchase_id,)
+    )
+    purchase_record = cursor.fetchone()
+
+    if purchase_record is None:
+        connection.close()
+        flash("Purchase record not found.", "error")
+        return redirect("/dashboard")
 
     cursor.execute(
         """

@@ -20,18 +20,35 @@ cursor.execute('''
     )
 ''')
 
+# Test scam report — insert only if it does not already exist
+cursor.execute(
+    """
+    SELECT id
+    FROM scam_reports
+    WHERE phone_number = ?
+      AND scam_type = ?
+      AND description = ?
+    """,
+    (
+        "0550000000",
+        "wrong-number scam",
+        "Test scam report for MoMoGuard Ghana.",
+    ),
+)
 
-# Test scam report
-cursor.execute('''
-    INSERT INTO scam_reports
-    (phone_number, scam_type, description)
-    VALUES (?, ?, ?)
-''', (
-    '0550000000',
-    'wrong-number scam',
-    'Test scam report for MoMoGuard Ghana.'
-))
-
+if cursor.fetchone() is None:
+    cursor.execute(
+        """
+        INSERT INTO scam_reports
+            (phone_number, scam_type, description)
+        VALUES (?, ?, ?)
+        """,
+        (
+            "0550000000",
+            "wrong-number scam",
+            "Test scam report for MoMoGuard Ghana.",
+        ),
+    )
 
 # Purchase records table
 cursor.execute('''
