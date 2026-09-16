@@ -10,7 +10,53 @@ app = Flask(__name__)
 app.secret_key = "momo-guard-secret-key"
 
 DATABASE = os.path.join(os.path.dirname(__file__), "database.db")
+def initialize_database():
+    connection = sqlite3.connect(DATABASE)
+    cursor = connection.cursor()
 
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS scam_reports (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            phone_number TEXT NOT NULL,
+            scam_type TEXT NOT NULL,
+            description TEXT,
+            date_reported TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS purchases (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            item TEXT NOT NULL,
+            amount REAL NOT NULL,
+            seller_phone TEXT NOT NULL,
+            buyer_phone TEXT NOT NULL,
+            transaction_reference TEXT,
+            transaction_date TEXT NOT NULL,
+            transaction_time TEXT NOT NULL,
+            payment_status TEXT NOT NULL DEFAULT 'Pending'
+        )
+    """)
+
+    # Add newer columns if they don't exist
+    for column, definition in [
+        ("payment_evidence", "TEXT"),
+        ("payment_verification", "TEXT NOT NULL DEFAULT 'Not verified'"),
+        ("dispute_reason", "TEXT"),
+        ("dispute_evidence", "TEXT"),
+    ]:
+        try:
+            cursor.execute(
+                f"ALTER TABLE purchases ADD COLUMN {column} {definition}"
+            )
+        except sqlite3.OperationalError:
+            pass
+
+    connection.commit()
+    connection.close()
+
+
+initialize_database()
 
 # PHONE NUMBER HELPERS
 
