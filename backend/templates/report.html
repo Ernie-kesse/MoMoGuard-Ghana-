@@ -18,7 +18,15 @@ Report a Scam - MoMoGuard Ghana
         Please provide as much accurate information as possible.
     </p>
 
+
     <form method="POST" action="/report">
+
+        <input
+            type="hidden"
+            name="csrf_token"
+            value="{{ csrf_token() }}"
+        >
+
 
         <label for="phone">
             Phone Number:
@@ -28,36 +36,69 @@ Report a Scam - MoMoGuard Ghana
             type="tel"
             id="phone"
             name="phone"
-            value="{{ phone or ''}}"
+            value="{{ phone or '' }}"
             placeholder="e.g. 0241234567 or +233241234567"
             maxlength="13"
             required
         >
 
-        <br>
+        <small>
+            You can enter a Ghanaian number starting with 0 or +233.
+        </small>
 
-        <label for="scam_type">Scam Type:</label>
 
-        <select id="scam_type" name="scam_type" required>
+        <label for="scam_type">
+            Scam Type:
+        </label>
+
+        <select
+            id="scam_type"
+            name="scam_type"
+            required
+        >
             <option value="">Select scam type</option>
-            <option value="Wrong-number scam">🔁 Wrong-number scam</option>
-            <option value="Fake MoMo support">🔊 Fake MoMo support</option>
-            <option value="Fake promotion">🎁 Fake promotion</option>
+
+            <option value="Wrong-number scam">
+                🔁 Wrong-number scam
+            </option>
+
+            <option value="Fake MoMo support">
+                🔊 Fake MoMo support
+            </option>
+
+            <option value="Fake promotion">
+                🎁 Fake promotion
+            </option>
         </select>
 
+
         <div class="scam-examples">
-            <p><strong>🔁 Wrong-number scam:</strong> Someone claims they sent money to you by mistake and ask you to send the money back.</p>
 
-            <p><strong>🔊 Fake MoMo support:</strong> Someone pretends to be customer support and ask for your PIN, OTP, or other sensitive informstion.</p>
+            <p>
+                <strong>🔁 Wrong-number scam:</strong>
+                Someone claims they sent money to you by mistake
+                and asks you to send the money back.
+            </p>
 
-            <p>,<strong>🎁 Fake promotion:</strong> Someone claim you have won money, airtime, or a prize and ask you to pay or provide information.</p>
+            <p>
+                <strong>🔊 Fake MoMo support:</strong>
+                Someone pretends to be customer support and asks
+                for your PIN, OTP, or other sensitive information.
+            </p>
+
+            <p>
+                <strong>🎁 Fake promotion:</strong>
+                Someone claims you have won money, airtime, or a prize
+                and asks you to pay or provide information.
+            </p>
+
         </div>
+
 
         <small>
             Choose the scam type that best describes what happened.
         </small>
 
-        <br>
 
         <label for="description">
             What happened?
@@ -77,7 +118,6 @@ Report a Scam - MoMoGuard Ghana
             <span id="character-count">0</span>/500 characters
         </small>
 
-        <br>
 
         <button
             type="submit"
@@ -90,7 +130,6 @@ Report a Scam - MoMoGuard Ghana
 
 </div>
 
-{% endblock %}
 
 <script>
     function updateCharacterCount() {
@@ -104,3 +143,5 @@ Report a Scam - MoMoGuard Ghana
         updateCharacterCount();
     });
 </script>
+
+{% endblock %}

@@ -16,7 +16,15 @@ Check a Number - MoMoGuard Ghana
 
     <form method="POST" action="/check">
 
-        <label for="phone">Phone Number:</label>
+        <input
+            type="hidden"
+            name="csrf_token"
+            value="{{ csrf_token() }}"
+        >
+
+        <label for="phone">
+            Phone Number:
+        </label>
 
         <input
             type="tel"
@@ -33,7 +41,7 @@ Check a Number - MoMoGuard Ghana
         </small>
 
         <button type="submit" class="button primary">
-            Check Number
+            🔍 Check Number
         </button>
 
     </form>
@@ -45,123 +53,165 @@ Check a Number - MoMoGuard Ghana
 
 <div class="card">
 
-  {% if scam_type %}
-  <div class="safety-advice">
-    {% if risk_score >= 80 %}
-        <h3>🚨 What You Should Do</h3>
+    {% if scam_type %}
+
+        <div class="safety-advice">
+
+            {% if risk_score >= 80 %}
+
+                <h3>🚨 What You Should Do</h3>
+
+                <p>
+                    Do not send money to this number.
+                    Do not share your PIN, OTP, or personal information.
+                    Consider reporting the number to your network provider.
+                </p>
+
+            {% elif risk_score >= 50 %}
+
+                <h3>⚠️ What You Should Do</h3>
+
+                <p>
+                    Be very careful. Do not send money or share sensitive
+                    information until you independently verify the situation.
+                </p>
+
+            {% elif risk_score > 0 %}
+
+                <h3>⚠️ What You Should Do</h3>
+
+                <p>
+                    This number has been reported before.
+                    Stay cautious and verify the person's identity before
+                    taking any action.
+                </p>
+
+            {% endif %}
+
+        </div>
+
+
+        <div class="button-group">
+
+            <a
+                href="/report?phone={{ phone }}"
+                class="button"
+            >
+                🚨 Report This Number
+            </a>
+
+            <a
+                href="/dashboard"
+                class="button"
+            >
+                📊 View Report
+            </a>
+
+        </div>
+
+
+        <h2>🚨 SCAM WARNING</h2>
+
         <p>
-          Do not send money to this number.
-          Do not share your PIN, OPT, or personal information.
-          Consider reporting the number to your network provider.
+            <strong>Number checked:</strong>
+            {{ phone }}
         </p>
 
-    {% elif risk_score >= 50 %}
-        <h3>⚠️ What You Should Do</h3>
+
+        <div class="risk-section">
+
+            <p>
+                <strong>Risk Score:</strong>
+                {{ risk_score }}/100
+            </p>
+
+            <p>
+                <strong>Risk Level:</strong>
+
+                {% if risk_level == "HIGH RISK" %}
+
+                    🔴 HIGH RISK
+
+                {% elif risk_level == "MEDIUM RISK" %}
+
+                    🟠 MEDIUM RISK
+
+                {% elif risk_level == "LOW RISK" %}
+
+                    🟡 LOW RISK
+
+                {% else %}
+
+                    🟢 NO REPORT
+
+                {% endif %}
+
+            </p>
+
+
+            <div class="risk-bar">
+
+                <div
+                    class="risk-fill"
+                    style="width: {{ risk_score }}%;"
+                ></div>
+
+            </div>
+
+        </div>
+
+
         <p>
-          Be very careful. Do not send money or share sensitive
-          information until you independently verify the situation.
+            <strong>Reports received:</strong>
+            {{ report_count }}
         </p>
 
-    {% elif risk_score > 0 %}
-        <h3>⚠️ What You Should Do</h3>
+
+        <h3>Scam Type</h3>
+
         <p>
-          This number has been reported before.
-          Stay cautious and varify the person's identity before
-          taking any action.
+            {{ scam_type }}
         </p>
+
+
+        <h3>Description</h3>
+
+        <p>
+            {{ description }}
+        </p>
+
+
+        <p>
+            ⚠️ <strong>Stay cautious.</strong>
+            Do not send money or share personal information
+            until you verify the situation.
+        </p>
+
+
+    {% else %}
+
+        <h2>🟡 No Report Found</h2>
+
+        <p>
+            <strong>Number checked:</strong>
+            {{ phone }}
+        </p>
+
+        <p>
+            {{ result }}
+        </p>
+
+        <a
+            href="/report?phone={{ phone }}"
+            class="button primary"
+        >
+            🚨 Report This Number
+        </a>
+
     {% endif %}
-  </div>
-
-  <div class="button-group">
-    <a href="/report?phone={{ phone }}" class="button">
-        🚨 Report This Number
-    </a>
-
-    <a href="/dashboard" class="button">
-        📊 View Report
-    </a>
-  </div>
-
-  <h2>🚨 SCAM WARNING</h2>
-
-  <p>
-    <strong>Number checked:</strong>
-  </p>
-
-  <div class="risk-section">
-
-    <p>
-      <strong>Risk Score:</strong>
-      {{ risk_score }}/100
-    </p>
-
-    <p>
-      <strong>Risk Level:</strong>
-
-      {% if risk_level == "HIGH RISK" %}
-          🔴 HIGH RISK
-      {% elif risk_level == "MEDIUM RISK" %}
-          🟢 MEDIUM RICK
-      {% elif risk_level == "LOW RISK" %}
-          🟡 LOW RISK
-      {% else %}
-          🟢 NO REPORT
-      {% endif %}
-    </p>
-
-    <div class="risk-bar">
-      <div
-        class="risk-fill"
-        style="width: {{ risk_score }}%;">
-      </div>
-
-    </div>
-
-  </div>
-  <p>
-    <strong>Reports received:</strong>
-    {{ report_count }}
-  </p>
-
-  <h3>Scam Type</h3>
-
-  <p>{{ scam_type }}</p>
-
-  <h3>Description</h3>
-
-  <p>{{ description }}</p>
-
-  <p>
-    ⚠️ <strong>Stay cautious.</strong>
-    Do not send money or share personal information 
-    until you verify the situation.
-  </p>
-
-  {% else %}
-
-  <h2>🟡 No Report Found</h2>
-
-  <p>
-    <strong>Number checked</strong>
-    {{ phone }}
-  </p>
-
-  <p>
-    {{ result }}
-  </p>
-
-  <br>
-
-  <br>
-
-    <a href="/report?phone={{ phone }}" class="button primary">
-    🚨 Report This Number
-    </a>
-    
-  {% endif %}
 
 </div>
 
 {% endif %}
-  
+
 {% endblock %}

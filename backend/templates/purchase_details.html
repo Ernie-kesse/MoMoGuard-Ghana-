@@ -8,282 +8,274 @@ Purchase Record - MoMoGuard Ghana
 
 <div class="card">
 
-```
-<h2>🛍️ Purchase Record #{{ purchase[0] }}</h2>
-
-<p>
-    Full details of this purchase record.
-</p>
-
-<hr>
-
-<h3>📦 Purchase Information</h3>
-
-<p>
-    <strong>Item:</strong>
-    {{ purchase[1] }}
-</p>
-
-<p>
-    <strong>Amount:</strong>
-    GH₵{{ "%.2f"|format(purchase[2]) }}
-</p>
-
-<h3>👤 Buyer & Seller</h3>
-
-<p>
-    <strong>Seller Phone:</strong>
-    {{ purchase[3] }}
-</p>
-
-<p>
-    <strong>Buyer Phone:</strong>
-    {{ purchase[4] }}
-</p>
-
-<h3>💳 Transaction Information</h3>
-
-<p>
-    <strong>Transaction Reference:</strong>
-    {{ purchase[5] or "Not provided" }}
-</p>
-
-<p>
-    <strong>Date:</strong>
-    {{ purchase[6] }}
-</p>
-
-<p>
-    <strong>Time:</strong>
-    {{ purchase[7] }}
-</p>
-
-<hr>
-
-<h3>🔐 Payment Evidence</h3>
-
-<p>
-    <strong>Evidence provided:</strong>
-</p>
-
-<div class="evidence-box">
-    {% if purchase[9] %}
-        <p>{{ purchase[9] }}</p>
-    {% else %}
-        <p>No payment evidence has been provided.</p>
-    {% endif %}
-</div>
-
-<hr>
-
-<h3>🔍 Payment Verification</h3>
-
-<p>
-    <strong>Current Verification:</strong>
-    {{ purchase[10] }}
-</p>
-
-<form method="POST" action="/purchase/{{ purchase[0] }}/verification">
-
-    <label for="verification">
-        <strong>Update Payment Verification:</strong>
-    </label>
-
-    <select name="verification" id="verification" required>
-
-        <option value="Not verified"
-            {% if purchase[10] == "Not verified" %}selected{% endif %}>
-            Not verified
-        </option>
-
-        <option value="Under review"
-            {% if purchase[10] == "Under review" %}selected{% endif %}>
-            Under review
-        </option>
-
-        <option value="Verified"
-            {% if purchase[10] == "Verified" %}selected{% endif %}>
-            Verified
-        </option>
-
-        <option value="Rejected"
-            {% if purchase[10] == "Rejected" %}selected{% endif %}>
-            Rejected
-        </option>
-
-    </select>
-
-    <button type="submit" class="button primary">
-        🔍 Update Verification
-    </button>
-
-</form>
-
-<hr>
-
-<h3>📊 Payment Status</h3>
-
-<p>
-    <strong>Current Status:</strong>
-    {{ purchase[8] }}
-</p>
-
-<form method="POST" action="/purchase/{{ purchase[0] }}/status">
-
-    <label for="status">
-        <strong>Update Status:</strong>
-    </label>
-
-    <select name="status" id="status" required>
-
-        <option value="Pending"
-            {% if purchase[8] == "Pending" %}selected{% endif %}>
-            Pending
-        </option>
-
-        <option value="Paid"
-            {% if purchase[8] == "Paid" %}selected{% endif %}>
-            Paid
-        </option>
-
-        <option value="Delivered"
-            {% if purchase[8] == "Delivered" %}selected{% endif %}>
-            Delivered
-        </option>
-
-        <option value="Completed"
-            {% if purchase[8] == "Completed" %}selected{% endif %}>
-            Completed
-        </option>
-
-        <option value="Disputed"
-            {% if purchase[8] == "Disputed" %}selected{% endif %}>
-            Disputed
-        </option>
-
-        <option value="Reversed"
-            {% if purchase[8] == "Reversed" %}selected{% endif %}>
-            Reversed
-        </option>
-
-    </select>
-
-    <button type="submit" class="button primary">
-        🔄 Update Status
-    </button>
-
-</form>
-<h3>⚠️ Dispute Information</h3>
-
-{% if purchase[8] == "Disputed" %}
+    <h2>🛍️ Purchase Record #{{ purchase[0] }}</h2>
 
     <p>
-        <strong>Dispute Reason:</strong>
+        Full details of this purchase record.
+    </p>
+
+    <hr>
+
+    <h3>📦 Purchase Information</h3>
+
+    <p>
+        <strong>Item:</strong>
+        {{ purchase[1] }}
+    </p>
+
+    <p>
+        <strong>Amount:</strong>
+        GH₵{{ "%.2f"|format(purchase[2]) }}
+    </p>
+
+    <h3>👤 Buyer & Seller</h3>
+
+    <p>
+        <strong>Seller Phone:</strong>
+        {{ purchase[3] }}
+    </p>
+
+    <p>
+        <strong>Buyer Phone:</strong>
+        {{ purchase[4] }}
+    </p>
+
+    <h3>💳 Transaction Information</h3>
+
+    <p>
+        <strong>Transaction Reference:</strong>
+        {{ purchase[5] or "Not provided" }}
+    </p>
+
+    <p>
+        <strong>Date:</strong>
+        {{ purchase[6] }}
+    </p>
+
+    <p>
+        <strong>Time:</strong>
+        {{ purchase[7] }}
+    </p>
+
+    <hr>
+
+    <h3>🔐 Payment Evidence</h3>
+
+    <p>
+        <strong>Evidence provided:</strong>
     </p>
 
     <div class="evidence-box">
-        {% if purchase[11] %}
-            <p>{{ purchase[11] }}</p>
+        {% if purchase[9] %}
+            <p>{{ purchase[9] }}</p>
         {% else %}
-            <p>No dispute reason has been provided.</p>
+            <p>No payment evidence has been provided.</p>
         {% endif %}
     </div>
 
-{% else %}
+    <hr>
 
-    <form method="POST" action="/purchase/{{ purchase[0] }}/dispute">
+    <h3>🔍 Payment Verification</h3>
 
-        <label for="reason">
-            <strong>Dispute Reason:</strong>
+    <p>
+        <strong>Current Verification:</strong>
+        {{ purchase[10] }}
+    </p>
+
+    <form method="POST" action="/purchase/{{ purchase[0] }}/verification">
+
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <label for="verification">
+            <strong>Update Payment Verification:</strong>
         </label>
 
-        <textarea
-            name="reason"
-            id="reason"
-            rows="4"
-            placeholder="Explain why this purchase is being disputed..."
-            required
-        ></textarea>
+        <select name="verification" id="verification" required>
+
+            <option value="Not verified"
+                {% if purchase[10] == "Not verified" %}selected{% endif %}>
+                Not verified
+            </option>
+
+            <option value="Under review"
+                {% if purchase[10] == "Under review" %}selected{% endif %}>
+                Under review
+            </option>
+
+            <option value="Verified"
+                {% if purchase[10] == "Verified" %}selected{% endif %}>
+                Verified
+            </option>
+
+            <option value="Rejected"
+                {% if purchase[10] == "Rejected" %}selected{% endif %}>
+                Rejected
+            </option>
+
+        </select>
 
         <button type="submit" class="button primary">
-            ⚠️ Open Dispute
+            🔍 Update Verification
         </button>
 
     </form>
 
-{% endif %}
-<hr>
+    <hr>
 
-{% if purchase[8] == "Disputed" %}
+    <h3>📊 Payment Status</h3>
 
     <p>
-        <strong>Dispute Reason:</strong>
+        <strong>Current Status:</strong>
+        {{ purchase[8] }}
     </p>
 
-    <div class="evidence-box">
-        {% if purchase[11] %}
-            <p>{{ purchase[11] }}</p>
-        {% else %}
-            <p>No dispute reason has been provided.</p>
-        {% endif %}
-    </div>
-    <p>
-    <strong>Dispute Evidence:</strong>
-</p>
+    <form method="POST" action="/purchase/{{ purchase[0] }}/status">
 
-<div class="evidence-box">
-    {% if purchase[12] %}
-        <p>{{ purchase[12] }}</p>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <label for="status">
+            <strong>Update Status:</strong>
+        </label>
+
+        <select name="status" id="status" required>
+
+            <option value="Pending"
+                {% if purchase[8] == "Pending" %}selected{% endif %}>
+                Pending
+            </option>
+
+            <option value="Paid"
+                {% if purchase[8] == "Paid" %}selected{% endif %}>
+                Paid
+            </option>
+
+            <option value="Delivered"
+                {% if purchase[8] == "Delivered" %}selected{% endif %}>
+                Delivered
+            </option>
+
+            <option value="Completed"
+                {% if purchase[8] == "Completed" %}selected{% endif %}>
+                Completed
+            </option>
+
+            <option value="Disputed"
+                {% if purchase[8] == "Disputed" %}selected{% endif %}>
+                Disputed
+            </option>
+
+            <option value="Reversed"
+                {% if purchase[8] == "Reversed" %}selected{% endif %}>
+                Reversed
+            </option>
+
+        </select>
+
+        <button type="submit" class="button primary">
+            🔄 Update Status
+        </button>
+
+    </form>
+
+    <hr>
+
+    <h3>⚠️ Dispute Information</h3>
+
+    {% if purchase[8] == "Disputed" %}
+
+        <p>
+            <strong>Dispute Reason:</strong>
+        </p>
+
+        <div class="evidence-box">
+            {% if purchase[11] %}
+                <p>{{ purchase[11] }}</p>
+            {% else %}
+                <p>No dispute reason has been provided.</p>
+            {% endif %}
+        </div>
+
+        <p>
+            <strong>Dispute Evidence:</strong>
+        </p>
+
+        <div class="evidence-box">
+            {% if purchase[12] %}
+                <p>{{ purchase[12] }}</p>
+            {% else %}
+                <p>No dispute evidence has been provided.</p>
+            {% endif %}
+        </div>
+
+        <form method="POST" action="/purchase/{{ purchase[0] }}/dispute-evidence">
+
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <label for="evidence">
+                <strong>Add Dispute Evidence:</strong>
+            </label>
+
+            <textarea
+                name="evidence"
+                id="evidence"
+                rows="4"
+                placeholder="Describe the evidence supporting this dispute..."
+                required
+            ></textarea>
+
+            <button type="submit" class="button primary">
+                📎 Save Dispute Evidence
+            </button>
+
+        </form>
+
     {% else %}
-        <p>No dispute evidence has been provided.</p>
+
+        <form method="POST" action="/purchase/{{ purchase[0] }}/dispute">
+
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <label for="reason">
+                <strong>Dispute Reason:</strong>
+            </label>
+
+            <textarea
+                name="reason"
+                id="reason"
+                rows="4"
+                placeholder="Explain why this purchase is being disputed..."
+                required
+            ></textarea>
+
+            <button type="submit" class="button primary">
+                ⚠️ Open Dispute
+            </button>
+
+        </form>
+
     {% endif %}
-</div>
-<form method="POST" action="/purchase/{{ purchase[0] }}/dispute-evidence">
 
-    <label for="evidence">
-        <strong>Add Dispute Evidence:</strong>
-    </label>
+    <hr>
 
-    <textarea
-        name="evidence"
-        id="evidence"
-        rows="4"
-        placeholder="Describe the evidence supporting this dispute..."
-        required
-    ></textarea>
-
-    <button type="submit" class="button primary">
-        📎 Save Dispute Evidence
-    </button>
-
-</form>
-{% else %}
+    <h3>👥 Transaction Views</h3>
 
     <p>
-        This purchase is not currently disputed.
+        Open the transaction from either the seller or buyer perspective.
     </p>
 
-{% endif %}
+    <a href="/seller/{{ purchase[0] }}" class="button">
+        🏪 Seller View
+    </a>
 
-<h3>👥 Transaction Views</h3>
+    <a href="/buyer/{{ purchase[0] }}" class="button">
+        👤 Buyer View
+    </a>
 
-<p>
-    Open the transaction from either the seller or buyer perspective.
-</p>
+    <hr>
 
-<a href="/seller/{{ purchase[0] }}" class="button">
-    🏪 Seller View
-</a>
-
-<a href="/buyer/{{ purchase[0] }}" class="button">
-    👤 Buyer View
-</a>
-
-<hr>
-
-<a href="/dashboard" class="button">
-    ← Back to Dashboard
-</a>
+    <a href="/dashboard" class="button">
+        ← Back to Dashboard
+    </a>
 
 </div>
 

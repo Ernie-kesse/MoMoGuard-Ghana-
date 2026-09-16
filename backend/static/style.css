@@ -9,6 +9,11 @@ body {
     color: #222;
 }
 
+
+/* ============================================================
+   Header
+   ============================================================ */
+
 header {
     background-color: #006b3f;
     color: white;
@@ -16,11 +21,21 @@ header {
     text-align: center;
 }
 
+
+/* ============================================================
+   Main Container
+   ============================================================ */
+
 .container {
     max-width: 900px;
     margin: 40px auto;
     padding: 20px;
 }
+
+
+/* ============================================================
+   Cards
+   ============================================================ */
 
 .card {
     background-color: white;
@@ -29,6 +44,11 @@ header {
     border-radius: 10px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
+
+
+/* ============================================================
+   Buttons
+   ============================================================ */
 
 .button {
     display: inline-block;
@@ -51,6 +71,15 @@ header {
     color: white;
 }
 
+button {
+    margin-top: 15px;
+}
+
+
+/* ============================================================
+   Forms
+   ============================================================ */
+
 input,
 select,
 textarea {
@@ -63,9 +92,96 @@ textarea {
     font-size: 16px;
 }
 
-button {
+.card form {
+    display: block;
+}
+
+.card form label {
+    display: block;
     margin-top: 15px;
 }
+
+.card form input,
+.card form textarea,
+.card form select {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 5px;
+}
+
+
+/* ============================================================
+   Navigation
+   ============================================================ */
+
+.navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 15px;
+    width: 100%;
+    margin: 0;
+    padding: 16px 30px;
+    background-color: #006b3f;
+    border-radius: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.nav-brand a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.nav-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+}
+
+.nav-links a {
+    color: white;
+    text-decoration: none;
+    padding: 8px 10px;
+    border-radius: 6px;
+}
+
+.nav-links a:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+
+/* ============================================================
+   Flash Messages
+   ============================================================ */
+
+.flash {
+    padding: 15px 20px;
+    margin: 20px 0;
+    border-radius: 8px;
+    font-weight: bold;
+}
+
+.flash.error {
+    background-color: #ffe5e5;
+    color: #b00020;
+    border: 1px solid #ffb3b3;
+}
+
+.flash.success {
+    background-color: #e5f7ed;
+    color: #006b3f;
+    border: 1px solid #a8dfc1;
+}
+
+
+/* ============================================================
+   Footer
+   ============================================================ */
 
 footer {
     text-align: center;
@@ -74,25 +190,30 @@ footer {
     color: white;
 }
 
-@media (max-width: 600px) {
-
-    .container {
-        margin: 20px auto;
-        padding: 15px;
-    }
-
-    h1 {
-        font-size: 30px;
-    }
-
-    .button {
-        display: block;
-        text-align: center;
-        margin: 10px 0;
-    }
+.site-footer {
+    margin-top: 50px;
+    padding: 35px 20px;
+    background-color: #222;
+    color: white;
+    text-align: center;
 }
 
-/* Dashboard statistics */
+.site-footer p {
+    margin: 8px 0;
+}
+
+.footer-disclaimer {
+    max-width: 700px;
+    margin: 20px auto 0 !important;
+    font-size: 13px;
+    line-height: 1.6;
+    opacity: 0.8;
+}
+
+
+/* ============================================================
+   Dashboard Statistics
+   ============================================================ */
 
 .stats-grid {
     display: grid;
@@ -118,99 +239,15 @@ footer {
     display: block;
 }
 
-/* Mobile layout */
-
-@media (max-width: 768px) {
-
-    .stats-grid {
-        grid-template-columns: 1fr;
-    }
-
+.dashboard-updated {
+    font-size: 14px;
+    opacity: 0.7;
 }
 
-/* Navigation bar */
 
-.navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    max-width: 1100px;
-    margin: 20px auto 0;
-    padding: 12px 20px;
-    background-color: white;
-    border-radius: 10px;
-}
-
-.nav-brand a {
-    color: #006b3f;
-    text-decoration: none;
-    font-weight: bold;
-    font-size: 18px;
-}
-
-.nav-links {
-    display: flex;
-    gap: 15px;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-
-.nav-links a {
-    color: #222;
-    text-decoration: none;
-    font-weight: bold;
-    padding: 8px 10px;
-    border-radius: 6px;
-}
-
-.nav-links a:hover {
-    background-color: #e8f5ef;
-    color: #006b3f;
-}
-
-/* Mobile navigation */
-
-@media (max-width: 768px) {
-
-    .navbar {
-        flex-direction: column;
-        gap: 15px;
-    }
-
-    .nav-links {
-        flex-direction: column;
-        width: 100%;
-    }
-
-    .nav-links a {
-        display: block;
-        text-align: center;
-    }
-
-}
-
-/* Flash messages */
-
-.flash {
-    padding: 15px 20px;
-    margin: 20px 0;
-    border-radius: 8px;
-    font-weight: bold;
-}
-
-.flash.error {
-    background-color: #ffe5e5;
-    color: #b00020;
-    border: 1px solid #ffb3b3;
-}
-
-.flash.success {
-    background-color: #e5f7ed;
-    color: #006b3f;
-    border: 1px solid #a8dfc1;
-}
-
-/* Responsive dashboard table */
+/* ============================================================
+   Tables
+   ============================================================ */
 
 .table-container {
     width: 100%;
@@ -221,7 +258,10 @@ footer {
     min-width: 700px;
 }
 
-/* Success page */
+
+/* ============================================================
+   Success Page
+   ============================================================ */
 
 .success-card {
     text-align: center;
@@ -240,7 +280,25 @@ footer {
     margin-top: 25px;
 }
 
-/* Risk score */
+.next-steps {
+    margin: 25px auto;
+    padding: 20px;
+    max-width: 650px;
+    background-color: #f4f7f6;
+    border-radius: 10px;
+    text-align: left;
+    line-height: 1.6;
+}
+
+.next-steps h3 {
+    margin-top: 0;
+}
+
+
+/* ============================================================
+   Risk Score
+   ============================================================ */
+
 .risk-section {
     margin: 20px 0;
 }
@@ -249,7 +307,7 @@ footer {
     width: 100%;
     max-width: 500px;
     height: 18px;
-    background-color: e5e5e5;
+    background-color: #e5e5e5;
     border-radius: 10px;
     overflow: hidden;
 }
@@ -260,6 +318,11 @@ footer {
     border-radius: 10px;
     transition: width 0.4s ease;
 }
+
+
+/* ============================================================
+   Safety Advice
+   ============================================================ */
 
 .safety-advice {
     margin-top: 25px;
@@ -273,17 +336,23 @@ footer {
     margin-top: 0;
 }
 
-.scam-examples {
-    margin-top: 15px;
-    padding: 15px;
-    background-color: #f4f7f6;
-    border-radius: 8px;
-}
+
+/* ============================================================
+   Scam Examples
+   ============================================================ */
 
 .scam-examples {
     margin: 10px 0;
+    padding: 15px;
+    background-color: #f4f7f6;
+    border-radius: 8px;
     line-height: 1.5;
 }
+
+
+/* ============================================================
+   How It Works
+   ============================================================ */
 
 .how-it-works {
     margin: 40px 0;
@@ -322,11 +391,11 @@ footer {
     line-height: 1.6;
 }
 
-@media (max-width: 768px) {
-    .stats-grid {
-        grid-template-columns: 1fr;
-    }
-}
+
+/* ============================================================
+   Why MoMoGuard
+   ============================================================ */
+
 .why-momoguard {
     margin: 50px 0;
     text-align: center;
@@ -353,11 +422,11 @@ footer {
 .benefit-card p {
     line-height: 1.6;
 }
-@media (max-width: 768px) {
-    .benefit-grid {
-        grid-template-columns: 1fr;
-    }
-}
+
+
+/* ============================================================
+   Call To Action
+   ============================================================ */
 
 .cta-section {
     margin: 50px 0;
@@ -367,6 +436,7 @@ footer {
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
+
 .cta-section h2 {
     margin-top: 0;
 }
@@ -377,60 +447,43 @@ footer {
     line-height: 1.6;
 }
 
-.site-footer {
-    margin-top: 50px;
-    padding: 35px 20px;
-    background-color: #222;
-    color: white;
-    text-align: center;
+
+/* ============================================================
+   Payment Evidence
+   ============================================================ */
+
+.evidence-box {
+    padding: 15px;
+    margin: 10px 0 20px 0;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #f8f9fa;
 }
 
-.site-footer p {
-    margin: 8px 0;
-}
-
-.footer-disclaimer {
-    max-width: 700px;
-    margin: 20px auto 0 !important;
-    font-size: 13px;
+.evidence-box p {
+    margin: 0;
     line-height: 1.6;
-    opacity: 0.8;
 }
 
-.navbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 15px;
-}
 
-.nav-brand a {
-    color: white;
-    text-decoration: none;
-    font-weight: bold;
-    font-size: 18px;
-}
+/* ============================================================
+   Mobile Responsive Layout
+   ============================================================ */
 
-.nav-links {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 8px;
-}
+@media (max-width: 768px) {
 
-.nav-links a {
-    color: white;
-    text-decoration: none;
-    padding: 8px 10px;
-    border-radius: 6px;
-}
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
 
-.nav-links a:hover {
-    background-color: rgba(255, 255, 255, 0.15);
-}
+    .steps-grid {
+        grid-template-columns: 1fr;
+    }
 
-@media (max-width: 600px) {
+    .benefit-grid {
+        grid-template-columns: 1fr;
+    }
+
     .navbar {
         flex-direction: column;
     }
@@ -447,59 +500,21 @@ footer {
     }
 }
 
-.dashboard-updated {
-    font-size: 14px;
-    opacity: 0.7;
-}
 
-.next-steps {
-    margin: 25px auto;
-    padding: 20px;
-    max-width: 650px;
-    background-color: #f4f7f6;
-    border-radius: 10px;
-    text-align: left;
-}
+@media (max-width: 600px) {
 
-.next-steps h3 {
-    margin-top: 0;
-}
+    .container {
+        margin: 20px auto;
+        padding: 15px;
+    }
 
-.next-steps {
-    line-height: 1.6;
-}
+    h1 {
+        font-size: 30px;
+    }
 
-/* Purchase form layout */
-
-.card form {
-    display: block;
-}
-
-.card form label {
-    display: block;
-    margin-top: 15px;
-}
-
-.card form input,
-.card form textarea,
-.card form select {
-    display: block;
-    width: 100%;
-    box-sizing: border-box;
-    margin-top: 5px;
-}
-
-/* Payment evidence */
-
-.evidence-box {
-    padding: 15px;
-    margin: 10px 0 20px 0;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    background: #f8f9fa;
-}
-
-.evidence-box p {
-    margin: 0;
-    line-height: 1.6;
+    .button {
+        display: block;
+        text-align: center;
+        margin: 10px 0;
+    }
 }

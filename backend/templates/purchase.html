@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 
-{% block title %}Create Purchase Record - MoMoGuard Ghana{% endblock %}
+{% block title %}
+Create Purchase Record - MoMoGuard Ghana
+{% endblock %}
 
 {% block content %}
 
@@ -14,49 +16,84 @@
 
     <form method="POST">
 
-        <label>Item</label>
+        <input
+            type="hidden"
+            name="csrf_token"
+            value="{{ csrf_token() }}"
+        >
+
+        <label for="item">
+            Item
+        </label>
+
         <input
             type="text"
+            id="item"
             name="item"
             placeholder="e.g. Samsung A15"
             required
         >
 
-        <label>Amount (GH₵)</label>
+
+        <label for="amount">
+            Amount (GH₵)
+        </label>
+
         <input
             type="number"
+            id="amount"
             name="amount"
             step="0.01"
+            min="0"
             placeholder="e.g. 1000"
             required
         >
 
-        <label>Seller Phone Number</label>
+
+        <label for="seller_phone">
+            Seller Phone Number
+        </label>
+
         <input
             type="tel"
+            id="seller_phone"
             name="seller_phone"
             placeholder="e.g. 0551234567"
             required
         >
 
-        <label>Buyer Phone Number</label>
+
+        <label for="buyer_phone">
+            Buyer Phone Number
+        </label>
+
         <input
             type="tel"
+            id="buyer_phone"
             name="buyer_phone"
             placeholder="e.g. 0241234567"
             required
         >
 
-        <label>Transaction Reference</label>
+
+        <label for="transaction_reference">
+            Transaction Reference
+        </label>
+
         <input
             type="text"
+            id="transaction_reference"
             name="transaction_reference"
             placeholder="MoMo transaction reference"
         >
 
-        <label>Payment Evidence</label>
+
+        <label for="payment_evidence">
+            Payment Evidence
+        </label>
 
         <textarea
+            id="payment_evidence"
             name="payment_evidence"
             placeholder="Describe the payment evidence, e.g. seller received an MTN MoMo SMS showing GH₵1,000."
             rows="4"
@@ -66,6 +103,7 @@
             Record evidence related to the payment.
             Do not enter your MoMo PIN, OTP, or password.
         </small>
+
 
         <button type="submit" class="button primary">
             🛡️ Create Purchase Record

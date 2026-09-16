@@ -1,25 +1,24 @@
 {% extends "base.html" %}
 
 {% block title %}
-Something Went Wrong - MoMoGuard Ghana
+    Server Error - MoMoGuard Ghana
 {% endblock %}
 
 {% block content %}
 
-<div class="card">
+<div class="error-page">
 
-    <h2>⚠️ Something Went Wrong</h2>
+    <h1>⚠️ Something Went Wrong</h1>
 
     <p>
-        We're sorry, but MoMoGuard Ghana encountered
-        an unexpected problem.
+        Sorry, something went wrong while processing your request.
     </p>
 
     <p>
-        Please try again in a moment.
+        Please try again or return to the homepage.
     </p>
 
-    <a href="/" class="button primary">
+    <a href="{{ url_for('home') }}" class="button">
         🏠 Back to Home
     </a>
 

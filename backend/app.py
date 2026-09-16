@@ -4,12 +4,23 @@ import sqlite3
 from zoneinfo import ZoneInfo
 
 from flask import Flask, flash, redirect, render_template, request
+from flask_wtf import CSRFProtect
 
 
 app = Flask(__name__)
-app.secret_key = "momo-guard-secret-key"
+# NOTE: set a real SECRET_KEY via environment variable in production.
+# A hardcoded key means anyone who sees this source can forge session
+# cookies / flash messages. Example: export SECRET_KEY="<random 32+ bytes>"
+app.secret_key = os.environ.get("SECRET_KEY", "dev-key-change-me")
+
+# Protects every POST/PUT/PATCH/DELETE route against CSRF automatically.
+# Every <form method="post"> in your templates needs a hidden CSRF field —
+# see the note after this file for the one-line template change required.
+csrf = CSRFProtect(app)
 
 DATABASE = os.path.join(os.path.dirname(__file__), "database.db")
+
+
 def initialize_database():
     connection = sqlite3.connect(DATABASE)
     cursor = connection.cursor()
@@ -77,6 +88,40 @@ def normalize_phone(phone):
     if phone.startswith("+233"):
         phone = "0" + phone[4:]
     return phone
+
+
+# PURCHASE STATE MACHINE
+#
+# Single source of truth for which payment_status transitions are legal.
+# Replaces the old pile of ad-hoc if-checks in update_purchase_status,
+# mark_delivered, and dispute_purchase with one table that all three
+# routes consult, so the rules can't drift out of sync between routes.
+#
+#   Pending --> Paid --> Delivered --> Completed        (happy path)
+#                 \          \
+#                  \--------> Disputed --> Reversed     (dispute path)
+#                                     \--> back to Delivered/Completed
+#                                          (dispute resolved in seller's favor)
+#                                     \--> Pending
+#                                          (dispute resolved: redo the payment)
+#
+# Completed and Reversed are terminal — no route may move a purchase out
+# of either state.
+ALLOWED_TRANSITIONS = {
+    "Pending": {"Paid"},
+    "Paid": {"Delivered", "Disputed"},
+    "Delivered": {"Completed", "Disputed"},
+    "Disputed": {"Pending", "Delivered", "Completed", "Reversed"},
+    "Completed": set(),
+    "Reversed": set(),
+}
+
+# Statuses that may only be entered once payment_verification == "Verified".
+VERIFICATION_REQUIRED_FOR = {"Paid", "Delivered", "Completed"}
+
+
+def status_label(status):
+    return status  # placeholder hook in case you want display-name mapping later
 
 
 # HOME
@@ -428,10 +473,7 @@ def purchase_details(purchase_id):
 @app.route("/purchase/<int:purchase_id>/status", methods=["POST"])
 def update_purchase_status(purchase_id):
     status = request.form["status"].strip()
-    allowed_statuses = (
-        "Pending", "Paid", "Delivered", "Completed", "Disputed", "Reversed"
-    )
-    if status not in allowed_statuses:
+    if status not in ALLOWED_TRANSITIONS:
         flash("Invalid purchase status.", "error")
         return redirect(f"/purchase/{purchase_id}")
 
@@ -453,34 +495,25 @@ def update_purchase_status(purchase_id):
         return redirect("/dashboard")
 
     payment_verification, current_status = purchase_record
-    if current_status == "Completed" and payment_verification != "Verified":
-        connection.close()
+
+    # Single check, driven by the transition table, replaces the previous
+    # five separate if-blocks (Completed-lock, Paid-needs-verification,
+    # no-moving-backward-from-Completed, Delivered-needs-verification,
+    # Completed-needs-Delivered-first). Anything not explicitly allowed
+    # from the current status is rejected here.
+    if status not in ALLOWED_TRANSITIONS.get(current_status, set()):
         flash(
-            "A completed purchase cannot have its payment verification changed.",
-            "error"
+            f"Cannot move a purchase from {current_status} to {status}.",
+            "error",
         )
+        connection.close()
         return redirect(f"/purchase/{purchase_id}")
 
-    if status == "Paid" and payment_verification != "Verified":
-        connection.close()
-        flash("Payment must be verified before the purchase can be marked as Paid.", "error")
-        return redirect(f"/purchase/{purchase_id}")
-    if current_status == "Completed" and status != "Completed":
+    if status in VERIFICATION_REQUIRED_FOR and payment_verification != "Verified":
         connection.close()
         flash(
-            "A completed purchase cannot be moved back to an earlier status.",
-            "error"
-        )
-        return redirect(f"/purchase/{purchase_id}")
-    if status == "Delivered" and payment_verification != "Verified":
-        connection.close()
-        flash("Payment must be verified before the purchase can be marked as Delivered.", "error")
-        return redirect(f"/purchase/{purchase_id}")
-    if status == "Completed" and current_status != "Delivered":
-        connection.close()
-        flash(
-            "The purchase must be marked as Delivered before it can be Completed.",
-            "error"
+            f"Payment must be verified before the purchase can be marked as {status}.",
+            "error",
         )
         return redirect(f"/purchase/{purchase_id}")
 
@@ -509,10 +542,32 @@ def update_payment_verification(purchase_id):
     connection = sqlite3.connect(DATABASE)
     cursor = connection.cursor()
 
-    if verification == "Verified":
-        new_status = "Paid"
-    else:
-        new_status = "Pending"
+    # Guard: don't silently reopen or reset a purchase that has already
+    # moved past the simple Pending/Paid stage (e.g. Delivered, Completed,
+    # Disputed, Reversed). Verification status should only drive
+    # Pending <-> Paid; anything further along goes through
+    # update_purchase_status / the dispute routes instead.
+    cursor.execute(
+        "SELECT payment_status FROM purchases WHERE id = ?",
+        (purchase_id,),
+    )
+    row = cursor.fetchone()
+    if row is None:
+        connection.close()
+        flash("Purchase record not found.", "error")
+        return redirect("/dashboard")
+
+    current_status = row[0]
+    if current_status not in {"Pending", "Paid"}:
+        connection.close()
+        flash(
+            f"Payment verification can no longer be changed once a purchase "
+            f"is {current_status}.",
+            "error",
+        )
+        return redirect(f"/purchase/{purchase_id}")
+
+    new_status = "Paid" if verification == "Verified" else "Pending"
 
     cursor.execute(
         "UPDATE purchases SET payment_verification = ?, payment_status = ? WHERE id = ?",
@@ -541,7 +596,7 @@ def mark_delivered(purchase_id):
     connection = sqlite3.connect(DATABASE)
     cursor = connection.cursor()
     cursor.execute(
-        "SELECT payment_verification FROM purchases WHERE id = ?",
+        "SELECT payment_verification, payment_status FROM purchases WHERE id = ?",
         (purchase_id,),
     )
     purchase_record = cursor.fetchone()
@@ -550,7 +605,22 @@ def mark_delivered(purchase_id):
         connection.close()
         flash("Purchase record not found.", "error")
         return redirect("/dashboard")
-    if purchase_record[0] != "Verified":
+
+    payment_verification, current_status = purchase_record
+
+    # Same transition table as update_purchase_status, so a seller can't
+    # mark something Delivered twice, or mark a Disputed/Reversed/Completed
+    # purchase as Delivered.
+    if "Delivered" not in ALLOWED_TRANSITIONS.get(current_status, set()):
+        connection.close()
+        flash(
+            f"Cannot mark a purchase as Delivered from its current status "
+            f"({current_status}).",
+            "error",
+        )
+        return redirect(f"/seller/{purchase_id}")
+
+    if payment_verification != "Verified":
         connection.close()
         flash("The item cannot be marked as Delivered until payment is verified.", "error")
         return redirect(f"/seller/{purchase_id}")
@@ -586,9 +656,9 @@ def page_not_found(error):
 def server_error(error):
     return render_template("500.html"), 500
 
+
 @app.route("/purchase/<int:purchase_id>/dispute", methods=["POST"])
 def dispute_purchase(purchase_id):
-
     reason = request.form.get("reason", "").strip()
 
     if len(reason) < 10:
@@ -602,8 +672,8 @@ def dispute_purchase(purchase_id):
     cursor = connection.cursor()
 
     cursor.execute(
-    "SELECT id FROM purchases WHERE id = ?",
-    (purchase_id,)
+        "SELECT payment_status FROM purchases WHERE id = ?",
+        (purchase_id,)
     )
     purchase_record = cursor.fetchone()
 
@@ -611,6 +681,20 @@ def dispute_purchase(purchase_id):
         connection.close()
         flash("Purchase record not found.", "error")
         return redirect("/dashboard")
+
+    current_status = purchase_record[0]
+
+    # This is the fix for the gap you had: previously any purchase could be
+    # disputed regardless of status (including one that was never paid, or
+    # one already Completed/Reversed). Now it goes through the same
+    # transition table — only Paid or Delivered purchases can be disputed.
+    if "Disputed" not in ALLOWED_TRANSITIONS.get(current_status, set()):
+        connection.close()
+        flash(
+            f"A purchase that is {current_status} cannot be disputed.",
+            "error",
+        )
+        return redirect(f"/purchase/{purchase_id}")
 
     cursor.execute(
         """
@@ -632,9 +716,9 @@ def dispute_purchase(purchase_id):
 
     return redirect(f"/purchase/{purchase_id}")
 
+
 @app.route("/purchase/<int:purchase_id>/dispute-evidence", methods=["POST"])
 def add_dispute_evidence(purchase_id):
-
     evidence = request.form.get("evidence", "").strip()
 
     if len(evidence) < 10:
@@ -648,8 +732,8 @@ def add_dispute_evidence(purchase_id):
     cursor = connection.cursor()
 
     cursor.execute(
-    "SELECT id FROM purchases WHERE id = ?",
-    (purchase_id,)
+        "SELECT payment_status FROM purchases WHERE id = ?",
+        (purchase_id,)
     )
     purchase_record = cursor.fetchone()
 
@@ -657,6 +741,12 @@ def add_dispute_evidence(purchase_id):
         connection.close()
         flash("Purchase record not found.", "error")
         return redirect("/dashboard")
+
+    # Evidence should only be added while a dispute is actually open.
+    if purchase_record[0] != "Disputed":
+        connection.close()
+        flash("Dispute evidence can only be added to a purchase that is currently Disputed.", "error")
+        return redirect(f"/purchase/{purchase_id}")
 
     cursor.execute(
         """
@@ -676,6 +766,7 @@ def add_dispute_evidence(purchase_id):
     )
 
     return redirect(f"/purchase/{purchase_id}")
+
 
 if __name__ == "__main__":
     app.run(debug=True)

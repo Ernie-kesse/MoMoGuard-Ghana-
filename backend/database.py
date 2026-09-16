@@ -1,7 +1,10 @@
-import sqlite3
 import os
+import sqlite3
 
-DATABASE = os.path.join(os.path.dirname(__file__), 'database.db')
+DATABASE = os.path.join(
+    os.path.dirname(__file__),
+    "database.db"
+)
 
 
 connection = sqlite3.connect(DATABASE)
@@ -9,8 +12,11 @@ connection = sqlite3.connect(DATABASE)
 cursor = connection.cursor()
 
 
-# Scam reports table
-cursor.execute('''
+# ============================================================
+# Scam Reports Table
+# ============================================================
+
+cursor.execute("""
     CREATE TABLE IF NOT EXISTS scam_reports (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         phone_number TEXT NOT NULL,
@@ -18,9 +24,15 @@ cursor.execute('''
         description TEXT,
         date_reported TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
-''')
+""")
 
-# Test scam report — insert only if it does not already exist
+
+# ============================================================
+# Test Scam Report
+# ============================================================
+
+# Insert the test report only if it does not already exist.
+
 cursor.execute(
     """
     SELECT id
@@ -37,10 +49,14 @@ cursor.execute(
 )
 
 if cursor.fetchone() is None:
+
     cursor.execute(
         """
-        INSERT INTO scam_reports
-            (phone_number, scam_type, description)
+        INSERT INTO scam_reports (
+            phone_number,
+            scam_type,
+            description
+        )
         VALUES (?, ?, ?)
         """,
         (
@@ -50,8 +66,12 @@ if cursor.fetchone() is None:
         ),
     )
 
-# Purchase records table
-cursor.execute('''
+
+# ============================================================
+# Purchase Records Table
+# ============================================================
+
+cursor.execute("""
     CREATE TABLE IF NOT EXISTS purchases (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         item TEXT NOT NULL,
@@ -63,9 +83,14 @@ cursor.execute('''
         transaction_time TEXT NOT NULL,
         payment_status TEXT NOT NULL DEFAULT 'Pending'
     )
-''')
+""")
 
-# Add payment evidence column if it does not already exist
+
+# ============================================================
+# Add New Purchase Columns
+# ============================================================
+
+# Payment evidence
 try:
     cursor.execute(
         "ALTER TABLE purchases ADD COLUMN payment_evidence TEXT"
@@ -73,22 +98,30 @@ try:
 except sqlite3.OperationalError:
     pass
 
-# Add payment verification column if it does not already exist
+
+# Payment verification
 try:
     cursor.execute(
-        "ALTER TABLE purchases ADD COLUMN payment_verification TEXT NOT NULL DEFAULT 'Not verified'"
+        """
+        ALTER TABLE purchases
+        ADD COLUMN payment_verification TEXT
+        NOT NULL DEFAULT 'Not verified'
+        """
     )
 except sqlite3.OperationalError:
     pass
 
-# Add dispute reason column if it does not already exist
+
+# Dispute reason
 try:
     cursor.execute(
         "ALTER TABLE purchases ADD COLUMN dispute_reason TEXT"
     )
 except sqlite3.OperationalError:
     pass
-# Add dispute evidence column if it does not already exist
+
+
+# Dispute evidence
 try:
     cursor.execute(
         "ALTER TABLE purchases ADD COLUMN dispute_evidence TEXT"
@@ -96,7 +129,13 @@ try:
 except sqlite3.OperationalError:
     pass
 
+
+# ============================================================
+# Save Changes
+# ============================================================
+
 connection.commit()
+
 connection.close()
 
 

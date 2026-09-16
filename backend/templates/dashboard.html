@@ -129,17 +129,21 @@ Scam Report Dashboard - MoMoGuard Ghana
                     </a>
                 </td>
 
-                <td>{{ report[1] }}</td>
+                <td>
+                    {{ report[1] }}
+                </td>
 
                 <td>
                     {{ report[2][:100] }}
 
                     {% if report[2]|length > 100 %}
-                    ...
+                        ...
                     {% endif %}
                 </td>
 
-                <td>{{ report[3] }}</td>
+                <td>
+                    {{ report[3] }}
+                </td>
 
             </tr>
 
@@ -151,7 +155,9 @@ Scam Report Dashboard - MoMoGuard Ghana
 
     {% else %}
 
-    <p>No scam reports have been submitted yet.</p>
+    <p>
+        No scam reports have been submitted yet.
+    </p>
 
     {% endif %}
 
@@ -208,15 +214,25 @@ Scam Report Dashboard - MoMoGuard Ghana
                         GH₵{{ "%.2f"|format(purchase[2]) }}
                     </td>
 
-                    <td>{{ purchase[3] }}</td>
+                    <td>
+                        {{ purchase[3] }}
+                    </td>
 
-                    <td>{{ purchase[4] }}</td>
+                    <td>
+                        {{ purchase[4] }}
+                    </td>
 
-                    <td>{{ purchase[6] }}</td>
+                    <td>
+                        {{ purchase[6] }}
+                    </td>
 
-                    <td>{{ purchase[7] }}</td>
+                    <td>
+                        {{ purchase[7] }}
+                    </td>
 
-                    <td>{{ purchase[8] }}</td>
+                    <td>
+                        {{ purchase[8] }}
+                    </td>
 
                 </tr>
 
@@ -233,7 +249,6 @@ Scam Report Dashboard - MoMoGuard Ghana
     <p>
         No purchase records have been created yet.
     </p>
-
 
     {% endif %}
 

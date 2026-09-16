@@ -7,51 +7,64 @@ Report Details - MoMoGuard Ghana
 {% block content %}
 
 <div class="card">
-	<h2>📱 Report Details</h2>
 
-	<p>
-		<strong>Phone Number:</strong>
-		{{ phone }}
-	</p>
-	<p>
-		<strong>Number of Reports:</strong>
-		{{ report_count }}
-	</p>
+    <h2>📱 Report Details</h2>
+
+    <p>
+        <strong>Phone Number:</strong>
+        {{ phone }}
+    </p>
+
+    <p>
+        <strong>Number of Reports:</strong>
+        {{ report_count }}
+    </p>
+
 </div>
 
 {% if reports %}
-	{% for report in reports %}
-	<div class="card">
-		<h3>🚨 Scam Report</h3>
 
-		<p>
-			<strong>Scam Type:</strong>
-			{{ report[1] }}
-		</p>
+    {% for report in reports %}
 
-		<p>
-			<strong>Description:</strong>
-			{{ report[2] }}
-		</p>
+        <div class="card">
 
-		<p>
-			<strong>Date Reported:</strong>
-			{{ report[3] }}
-		</p>
-	</div>
-	{% endfor %}
+            <h3>🚨 Scam Report</h3>
+
+            <p>
+                <strong>Scam Type:</strong>
+                {{ report[1] }}
+            </p>
+
+            <p>
+                <strong>Description:</strong>
+                {{ report[2] }}
+            </p>
+
+            <p>
+                <strong>Date Reported:</strong>
+                {{ report[3] }}
+            </p>
+
+        </div>
+
+    {% endfor %}
+
 {% else %}
-	<div class="card">
-		<h2>🟡 No Report Found</h2>
 
-		<p>
-			No report was found for this number.
-		</p>
-	</div>
+    <div class="card">
+
+        <h2>🟡 No Report Found</h2>
+
+        <p>
+            No report was found for this number.
+        </p>
+
+    </div>
+
 {% endif %}
 
 <a href="/dashboard" class="button">
-	← Back to Dashboard
+    ← Back to Dashboard
 </a>
 
 {% endblock %}
