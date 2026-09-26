@@ -104,7 +104,27 @@ Seller View - MoMoGuard Ghana
             ✅ This purchase has been marked as Delivered.
         </p>
 
-    {% elif purchase[10] == "Verified" %}
+    {% elif purchase[8] == "Completed" %}
+
+        <p class="flash success">
+            ✅ This purchase has been completed.
+        </p>
+
+    {% elif purchase[8] == "Disputed" %}
+
+        <p class="flash error">
+            ⚠️ This purchase is currently under dispute. It cannot be
+            marked as Delivered until the dispute is resolved from the
+            purchase record.
+        </p>
+
+    {% elif purchase[8] == "Reversed" %}
+
+        <p class="flash error">
+            ↩️ This purchase was reversed.
+        </p>
+
+    {% elif can_mark_delivered %}
 
         <p>
             ✅ Payment has been verified.

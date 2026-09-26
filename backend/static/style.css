@@ -518,3 +518,129 @@ footer {
         margin: 10px 0;
     }
 }
+/* ============================================================
+   Auth Pages (Login / Register)
+   ============================================================ */
+
+.auth-container {
+    display: flex;
+    justify-content: center;
+    padding: 40px 20px;
+}
+
+.auth-card {
+    background-color: white;
+    padding: 35px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    width: 100%;
+    max-width: 420px;
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.auth-header h1 {
+    margin: 0 0 8px;
+    color: #006b3f;
+    font-size: 24px;
+}
+
+.auth-header p {
+    margin: 0;
+    color: #555;
+}
+
+.auth-form .form-group {
+    margin-bottom: 18px;
+}
+
+.auth-form label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: bold;
+}
+
+.auth-form input {
+    width: 100%;
+    max-width: none;
+    margin-top: 0;
+}
+
+.btn-primary,
+.auth-button {
+    display: block;
+    width: 100%;
+    padding: 12px 20px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 6px;
+    background-color: #006b3f;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    text-align: center;
+}
+
+.btn-primary:hover,
+.auth-button:hover {
+    background-color: #00512f;
+}
+
+.auth-footer {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.auth-footer a {
+    color: #006b3f;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.auth-footer a:hover {
+    text-decoration: underline;
+}
+
+
+/* ============================================================
+   Navbar User / Logout
+   ============================================================ */
+
+.nav-user {
+    color: white;
+    padding: 8px 10px;
+    font-size: 14px;
+}
+
+.logout-form {
+    display: inline-block;
+    margin: 0;
+}
+
+.nav-logout {
+    background: none;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    color: white;
+    padding: 8px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.nav-logout:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+
+/* ============================================================
+   Muted / disabled-state helper text
+   ============================================================ */
+
+.muted {
+    color: #777;
+    font-style: italic;
+}

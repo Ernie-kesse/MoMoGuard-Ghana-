@@ -82,43 +82,54 @@ Purchase Record - MoMoGuard Ghana
         {{ purchase[10] }}
     </p>
 
-    <form method="POST" action="/purchase/{{ purchase[0] }}/verification">
+    {% if can_update_verification %}
 
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <form method="POST" action="/purchase/{{ purchase[0] }}/verification">
 
-        <label for="verification">
-            <strong>Update Payment Verification:</strong>
-        </label>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-        <select name="verification" id="verification" required>
+            <label for="verification">
+                <strong>Update Payment Verification:</strong>
+            </label>
 
-            <option value="Not verified"
-                {% if purchase[10] == "Not verified" %}selected{% endif %}>
-                Not verified
-            </option>
+            <select name="verification" id="verification" required>
 
-            <option value="Under review"
-                {% if purchase[10] == "Under review" %}selected{% endif %}>
-                Under review
-            </option>
+                <option value="Not verified"
+                    {% if purchase[10] == "Not verified" %}selected{% endif %}>
+                    Not verified
+                </option>
 
-            <option value="Verified"
-                {% if purchase[10] == "Verified" %}selected{% endif %}>
-                Verified
-            </option>
+                <option value="Under review"
+                    {% if purchase[10] == "Under review" %}selected{% endif %}>
+                    Under review
+                </option>
 
-            <option value="Rejected"
-                {% if purchase[10] == "Rejected" %}selected{% endif %}>
-                Rejected
-            </option>
+                <option value="Verified"
+                    {% if purchase[10] == "Verified" %}selected{% endif %}>
+                    Verified
+                </option>
 
-        </select>
+                <option value="Rejected"
+                    {% if purchase[10] == "Rejected" %}selected{% endif %}>
+                    Rejected
+                </option>
 
-        <button type="submit" class="button primary">
-            🔍 Update Verification
-        </button>
+            </select>
 
-    </form>
+            <button type="submit" class="button primary">
+                🔍 Update Verification
+            </button>
+
+        </form>
+
+    {% else %}
+
+        <p class="muted">
+            Payment verification can no longer be changed — this purchase
+            has moved past the Pending/Paid stage.
+        </p>
+
+    {% endif %}
 
     <hr>
 
@@ -129,53 +140,40 @@ Purchase Record - MoMoGuard Ghana
         {{ purchase[8] }}
     </p>
 
-    <form method="POST" action="/purchase/{{ purchase[0] }}/status">
+    {% if allowed_next_statuses %}
 
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <form method="POST" action="/purchase/{{ purchase[0] }}/status">
 
-        <label for="status">
-            <strong>Update Status:</strong>
-        </label>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-        <select name="status" id="status" required>
+            <label for="status">
+                <strong>Update Status:</strong>
+            </label>
 
-            <option value="Pending"
-                {% if purchase[8] == "Pending" %}selected{% endif %}>
-                Pending
-            </option>
+            <select name="status" id="status" required>
 
-            <option value="Paid"
-                {% if purchase[8] == "Paid" %}selected{% endif %}>
-                Paid
-            </option>
+                {% for next_status in allowed_next_statuses %}
+                    <option value="{{ next_status }}">
+                        {{ next_status }}
+                    </option>
+                {% endfor %}
 
-            <option value="Delivered"
-                {% if purchase[8] == "Delivered" %}selected{% endif %}>
-                Delivered
-            </option>
+            </select>
 
-            <option value="Completed"
-                {% if purchase[8] == "Completed" %}selected{% endif %}>
-                Completed
-            </option>
+            <button type="submit" class="button primary">
+                🔄 Update Status
+            </button>
 
-            <option value="Disputed"
-                {% if purchase[8] == "Disputed" %}selected{% endif %}>
-                Disputed
-            </option>
+        </form>
 
-            <option value="Reversed"
-                {% if purchase[8] == "Reversed" %}selected{% endif %}>
-                Reversed
-            </option>
+    {% else %}
 
-        </select>
+        <p class="muted">
+            This purchase is {{ purchase[8] }} and cannot move to any
+            other status.
+        </p>
 
-        <button type="submit" class="button primary">
-            🔄 Update Status
-        </button>
-
-    </form>
+    {% endif %}
 
     <hr>
 
@@ -229,7 +227,7 @@ Purchase Record - MoMoGuard Ghana
 
         </form>
 
-    {% else %}
+    {% elif can_dispute %}
 
         <form method="POST" action="/purchase/{{ purchase[0] }}/dispute">
 
@@ -252,6 +250,12 @@ Purchase Record - MoMoGuard Ghana
             </button>
 
         </form>
+
+    {% else %}
+
+        <p class="muted">
+            A purchase that is {{ purchase[8] }} cannot be disputed.
+        </p>
 
     {% endif %}
 

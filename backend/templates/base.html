@@ -24,14 +24,48 @@
                 MoMoGuard Ghana
             </a>
         </div>
-
         <div class="nav-links">
-            <a href="{{ url_for('home') }}">Home</a>
-            <a href="{{ url_for('check') }}">Check</a>
-            <a href="{{ url_for('report') }}">Report</a>
-            <a href="{{ url_for('safety') }}">Safety Tips</a>
-            <a href="{{ url_for('dashboard') }}">Dashboard</a>
-        </div>
+
+    <a href="{{ url_for('home') }}">Home</a>
+    <a href="{{ url_for('check') }}">Check</a>
+    <a href="{{ url_for('report') }}">Report</a>
+    <a href="{{ url_for('safety') }}">Safety Tips</a>
+    <a href="{{ url_for('dashboard') }}">Dashboard</a>
+
+    {% if session.get("user_id") %}
+
+        <span class="nav-user">
+            Hi, {{ session.get("user_name") }}
+        </span>
+
+        <form
+            method="POST"
+            action="{{ url_for('logout') }}"
+            class="logout-form"
+        >
+            <input
+                type="hidden"
+                name="csrf_token"
+                value="{{ csrf_token() }}"
+            >
+
+            <button
+                type="submit"
+                class="nav-logout"
+            >
+                Logout
+            </button>
+        </form>
+
+    {% else %}
+
+        <a href="{{ url_for('login') }}">Log In</a>
+        <a href="{{ url_for('register') }}">Register</a>
+
+    {% endif %}
+
+</div>
+        
     </nav>
 
     <main class="container">

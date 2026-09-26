@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Log In | MoMoGuard Ghana
+{% endblock %}
+
+{% block content %}
+
+<div class="auth-container">
+
+    <div class="auth-card">
+
+        <div class="auth-header">
+            <h1>Welcome Back</h1>
+
+            <p>
+                Log in to your MoMoGuard Ghana account.
+            </p>
+        </div>
+
+        <form method="POST" class="auth-form">
+
+            <input
+                type="hidden"
+                name="csrf_token"
+                value="{{ csrf_token() }}"
+            >
+
+            <div class="form-group">
+
+                <label for="email">
+                    Email Address
+                </label>
+
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    placeholder="you@example.com"
+                    required
+                    autocomplete="email"
+                >
+
+            </div>
+
+            <div class="form-group">
+
+                <label for="password">
+                    Password
+                </label>
+
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    placeholder="Enter your password"
+                    required
+                    autocomplete="current-password"
+                >
+
+            </div>
+
+            <button
+                type="submit"
+                class="btn-primary auth-button"
+            >
+                Log In
+            </button>
+
+        </form>
+
+        <div class="auth-footer">
+
+            <p>
+                Don't have an account?
+                <a href="{{ url_for('register') }}">
+                    Create an account
+                </a>
+            </p>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
