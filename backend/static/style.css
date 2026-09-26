@@ -11,18 +11,6 @@ body {
 
 
 /* ============================================================
-   Header
-   ============================================================ */
-
-header {
-    background-color: #006b3f;
-    color: white;
-    padding: 20px;
-    text-align: center;
-}
-
-
-/* ============================================================
    Main Container
    ============================================================ */
 
@@ -188,26 +176,6 @@ footer {
     padding: 25px;
     background-color: #222;
     color: white;
-}
-
-.site-footer {
-    margin-top: 50px;
-    padding: 35px 20px;
-    background-color: #222;
-    color: white;
-    text-align: center;
-}
-
-.site-footer p {
-    margin: 8px 0;
-}
-
-.footer-disclaimer {
-    max-width: 700px;
-    margin: 20px auto 0 !important;
-    font-size: 13px;
-    line-height: 1.6;
-    opacity: 0.8;
 }
 
 
@@ -467,58 +435,6 @@ footer {
 
 
 /* ============================================================
-   Mobile Responsive Layout
-   ============================================================ */
-
-@media (max-width: 768px) {
-
-    .stats-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .steps-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .benefit-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .navbar {
-        flex-direction: column;
-    }
-
-    .nav-links {
-        width: 100%;
-        flex-direction: column;
-    }
-
-    .nav-links a {
-        display: block;
-        text-align: center;
-        width: 100%;
-    }
-}
-
-
-@media (max-width: 600px) {
-
-    .container {
-        margin: 20px auto;
-        padding: 15px;
-    }
-
-    h1 {
-        font-size: 30px;
-    }
-
-    .button {
-        display: block;
-        text-align: center;
-        margin: 10px 0;
-    }
-}
-/* ============================================================
    Auth Pages (Login / Register)
    ============================================================ */
 
@@ -643,4 +559,58 @@ footer {
 .muted {
     color: #777;
     font-style: italic;
+}
+
+
+/* ============================================================
+   Mobile Responsive Layout
+   ============================================================ */
+
+@media (max-width: 768px) {
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .steps-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .benefit-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .navbar {
+        flex-direction: column;
+    }
+
+    .nav-links {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .nav-links a {
+        display: block;
+        text-align: center;
+        width: 100%;
+    }
+}
+
+
+@media (max-width: 600px) {
+
+    .container {
+        margin: 20px auto;
+        padding: 15px;
+    }
+
+    h1 {
+        font-size: 30px;
+    }
+
+    .button {
+        display: block;
+        text-align: center;
+        margin: 10px 0;
+    }
 }

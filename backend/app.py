@@ -34,7 +34,17 @@ app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 # for local http://localhost development, or the cookie won't be set at all.
 app.config["SESSION_COOKIE_SECURE"] = os.environ.get("SESSION_COOKIE_SECURE", "0") == "1"
 
+# Caps request body size (form uploads, evidence text, etc.) at 1 MB to
+# blunt naive large-payload denial-of-service attempts. Adjust upward
+# if you ever add real file uploads for payment/dispute evidence.
+app.config["MAX_CONTENT_LENGTH"] = 1 * 1024 * 1024
+
 DATABASE = os.path.join(os.path.dirname(__file__), "database.db")
+
+# Used only to keep login's timing consistent when no matching user
+# exists — see the comment in login() for why. Computed once at
+# startup rather than per failed attempt.
+_DUMMY_PASSWORD_HASH = generate_password_hash("not-a-real-password")
 
 
 # ============================================================
@@ -100,6 +110,22 @@ def initialize_database():
         except sqlite3.OperationalError:
             pass
 
+    # Add newer user columns if they don't exist
+    for column, definition in [
+        # 0 = ordinary user, 1 = admin. Nobody can set this on themselves
+        # through the app — an admin is granted only by running
+        # promote_to_admin.py directly against the database. Admins can
+        # view any purchase and are the only ones who can resolve a
+        # dispute (move a purchase off "Disputed").
+        ("is_admin", "INTEGER NOT NULL DEFAULT 0"),
+    ]:
+        try:
+            cursor.execute(
+                f"ALTER TABLE users ADD COLUMN {column} {definition}"
+            )
+        except sqlite3.OperationalError:
+            pass
+
     connection.commit()
     connection.close()
 
@@ -121,6 +147,28 @@ def login_required(view_function):
         if "user_id" not in session:
             flash("Please log in to continue.", "error")
             return redirect(url_for("login"))
+
+        return view_function(*args, **kwargs)
+
+    return wrapped_view
+
+
+def admin_required(view_function):
+    """
+    Protect a route so only an admin account can access it. Assumes
+    login_required (or an equivalent session check) already ran —
+    use both decorators together, login_required first.
+    """
+
+    @wraps(view_function)
+    def wrapped_view(*args, **kwargs):
+        if "user_id" not in session:
+            flash("Please log in to continue.", "error")
+            return redirect(url_for("login"))
+
+        if not session.get("is_admin"):
+            flash("That action requires an admin account.", "error")
+            return redirect(url_for("dashboard"))
 
         return view_function(*args, **kwargs)
 
@@ -318,7 +366,7 @@ def login():
 
         cursor.execute(
             """
-            SELECT id, name, email, password_hash
+            SELECT id, name, email, password_hash, is_admin
             FROM users
             WHERE email = ?
             """,
@@ -328,15 +376,23 @@ def login():
         user = cursor.fetchone()
         connection.close()
 
-        # User does not exist
+        # A pre-computed dummy hash to check the password against when no
+        # user exists, so this branch takes roughly the same time as a
+        # real check_password_hash call below. Without this, a wrong
+        # email fails instantly while a right-email-wrong-password
+        # attempt takes measurably longer (because it actually runs the
+        # hash), which lets someone infer which emails are registered
+        # just by timing login attempts.
         if user is None:
+            check_password_hash(_DUMMY_PASSWORD_HASH, password)
+
             flash(
                 "Invalid email or password.",
                 "error",
             )
             return render_template("login.html")
 
-        user_id, user_name, user_email, password_hash = user
+        user_id, user_name, user_email, password_hash, is_admin = user
 
         # Check password against secure hash
         if not check_password_hash(password_hash, password):
@@ -353,6 +409,7 @@ def login():
         session["user_id"] = user_id
         session["user_name"] = user_name
         session["user_email"] = user_email
+        session["is_admin"] = bool(is_admin)
 
         flash(
             f"Welcome back, {user_name}!",
@@ -491,7 +548,6 @@ def check():
 # ============================================================
 
 @app.route("/report", methods=["GET", "POST"])
-@login_required
 def report():
 
     prefilled_phone = request.args.get(
@@ -744,26 +800,49 @@ def dashboard():
 
     reports = cursor.fetchall()
 
-    cursor.execute(
-        """
-        SELECT
-            id,
-            item,
-            amount,
-            seller_phone,
-            buyer_phone,
-            transaction_reference,
-            transaction_date,
-            transaction_time,
-            payment_status,
-            payment_evidence
-        FROM purchases
-        WHERE created_by = ?
-        ORDER BY id DESC
-        LIMIT 10
-        """,
-        (session["user_id"],),
-    )
+    if session.get("is_admin"):
+        # Admins see every purchase — needed so there's actually
+        # someone able to spot and review purchases stuck in
+        # "Disputed" that they didn't create themselves.
+        cursor.execute(
+            """
+            SELECT
+                id,
+                item,
+                amount,
+                seller_phone,
+                buyer_phone,
+                transaction_reference,
+                transaction_date,
+                transaction_time,
+                payment_status,
+                payment_evidence
+            FROM purchases
+            ORDER BY id DESC
+            LIMIT 10
+            """
+        )
+    else:
+        cursor.execute(
+            """
+            SELECT
+                id,
+                item,
+                amount,
+                seller_phone,
+                buyer_phone,
+                transaction_reference,
+                transaction_date,
+                transaction_time,
+                payment_status,
+                payment_evidence
+            FROM purchases
+            WHERE created_by = ?
+            ORDER BY id DESC
+            LIMIT 10
+            """,
+            (session["user_id"],),
+        )
 
     purchases = cursor.fetchall()
 
@@ -988,10 +1067,11 @@ def purchase():
 # GET PURCHASE
 # ============================================================
 
-def get_purchase(purchase_id, owner_user_id):
+def get_purchase(purchase_id, owner_user_id, is_admin=False):
     """
-    Fetch a purchase only if it was created by owner_user_id.
+    Fetch a purchase.
 
+    For an ordinary user, only returns it if owner_user_id created it.
     Deliberately returns None both when the purchase doesn't exist at
     all AND when it exists but belongs to someone else — the caller
     can't tell the two apart, and every call site already shows the
@@ -1000,6 +1080,10 @@ def get_purchase(purchase_id, owner_user_id):
     yours" for someone else's would let a logged-in user probe IDs
     and learn which purchases exist even without being able to open
     them.
+
+    For an admin (is_admin=True), the ownership filter is skipped
+    entirely — admins can view and act on any purchase, since that's
+    what's needed to review and resolve disputes that aren't theirs.
     """
 
     connection = sqlite3.connect(
@@ -1008,27 +1092,50 @@ def get_purchase(purchase_id, owner_user_id):
 
     cursor = connection.cursor()
 
-    cursor.execute(
-        """
-        SELECT
-            id,
-            item,
-            amount,
-            seller_phone,
-            buyer_phone,
-            transaction_reference,
-            transaction_date,
-            transaction_time,
-            payment_status,
-            payment_evidence,
-            payment_verification,
-            dispute_reason,
-            dispute_evidence
-        FROM purchases
-        WHERE id = ? AND created_by = ?
-        """,
-        (purchase_id, owner_user_id),
-    )
+    if is_admin:
+        cursor.execute(
+            """
+            SELECT
+                id,
+                item,
+                amount,
+                seller_phone,
+                buyer_phone,
+                transaction_reference,
+                transaction_date,
+                transaction_time,
+                payment_status,
+                payment_evidence,
+                payment_verification,
+                dispute_reason,
+                dispute_evidence
+            FROM purchases
+            WHERE id = ?
+            """,
+            (purchase_id,),
+        )
+    else:
+        cursor.execute(
+            """
+            SELECT
+                id,
+                item,
+                amount,
+                seller_phone,
+                buyer_phone,
+                transaction_reference,
+                transaction_date,
+                transaction_time,
+                payment_status,
+                payment_evidence,
+                payment_verification,
+                dispute_reason,
+                dispute_evidence
+            FROM purchases
+            WHERE id = ? AND created_by = ?
+            """,
+            (purchase_id, owner_user_id),
+        )
 
     purchase_record = cursor.fetchone()
 
@@ -1048,6 +1155,7 @@ def purchase_details(purchase_id):
     purchase_record = get_purchase(
         purchase_id,
         session["user_id"],
+        is_admin=session.get("is_admin", False),
     )
 
     if purchase_record is None:
@@ -1061,8 +1169,16 @@ def purchase_details(purchase_id):
 
     # Tell the template which actions are actually reachable from here,
     # so it stops offering buttons/options the backend will just reject.
+    # "Disputed" is deliberately excluded here even when
+    # ALLOWED_TRANSITIONS technically permits it — opening a dispute
+    # has its own dedicated form (dispute_purchase) that requires a
+    # written reason. Letting the generic status dropdown also set
+    # "Disputed" would let someone dispute a purchase with zero
+    # explanation recorded, bypassing that requirement entirely.
     allowed_next_statuses = sorted(
-        ALLOWED_TRANSITIONS.get(current_status, set())
+        status
+        for status in ALLOWED_TRANSITIONS.get(current_status, set())
+        if status != "Disputed"
     )
     can_dispute = "Disputed" in ALLOWED_TRANSITIONS.get(current_status, set())
     can_update_verification = current_status in {"Pending", "Paid"}
@@ -1104,22 +1220,52 @@ def update_purchase_status(
             f"/purchase/{purchase_id}"
         )
 
+    # "Disputed" can only be set through dispute_purchase(), which
+    # requires a written reason. This route handles every other
+    # transition, so reject it here even if someone POSTs it directly
+    # (bypassing the dropdown, which no longer offers it either).
+    if status == "Disputed":
+
+        flash(
+            "To dispute a purchase, use the dispute form and explain "
+            "why — this doesn't record a reason.",
+            "error",
+        )
+
+        return redirect(
+            f"/purchase/{purchase_id}"
+        )
+
+    is_admin = session.get("is_admin", False)
+
     connection = sqlite3.connect(
         DATABASE
     )
 
     cursor = connection.cursor()
 
-    cursor.execute(
-        """
-        SELECT
-            payment_verification,
-            payment_status
-        FROM purchases
-        WHERE id = ? AND created_by = ?
-        """,
-        (purchase_id, session["user_id"]),
-    )
+    if is_admin:
+        cursor.execute(
+            """
+            SELECT
+                payment_verification,
+                payment_status
+            FROM purchases
+            WHERE id = ?
+            """,
+            (purchase_id,),
+        )
+    else:
+        cursor.execute(
+            """
+            SELECT
+                payment_verification,
+                payment_status
+            FROM purchases
+            WHERE id = ? AND created_by = ?
+            """,
+            (purchase_id, session["user_id"]),
+        )
 
     purchase_record = cursor.fetchone()
 
@@ -1139,6 +1285,25 @@ def update_purchase_status(
     payment_verification, current_status = (
         purchase_record
     )
+
+    # Resolving a dispute (leaving "Disputed" for anything else) is
+    # admin-only: the purchase's own owner shouldn't be the one who
+    # gets to decide the outcome of a dispute they're a party to.
+    # Opening a dispute, or adding evidence to one, is unaffected —
+    # this only blocks moving OFF "Disputed".
+    if current_status == "Disputed" and status != "Disputed" and not is_admin:
+
+        connection.close()
+
+        flash(
+            "This purchase is under dispute. Only an admin can resolve "
+            "it — add any supporting evidence and wait for review.",
+            "error",
+        )
+
+        return redirect(
+            f"/purchase/{purchase_id}"
+        )
 
     if status not in ALLOWED_TRANSITIONS.get(
         current_status,
@@ -1174,18 +1339,31 @@ def update_purchase_status(
             f"/purchase/{purchase_id}"
         )
 
-    cursor.execute(
-        """
-        UPDATE purchases
-        SET payment_status = ?
-        WHERE id = ? AND created_by = ?
-        """,
-        (
-            status,
-            purchase_id,
-            session["user_id"],
-        ),
-    )
+    if is_admin:
+        cursor.execute(
+            """
+            UPDATE purchases
+            SET payment_status = ?
+            WHERE id = ?
+            """,
+            (
+                status,
+                purchase_id,
+            ),
+        )
+    else:
+        cursor.execute(
+            """
+            UPDATE purchases
+            SET payment_status = ?
+            WHERE id = ? AND created_by = ?
+            """,
+            (
+                status,
+                purchase_id,
+                session["user_id"],
+            ),
+        )
 
     connection.commit()
     connection.close()
@@ -1333,6 +1511,7 @@ def seller_view(purchase_id):
     purchase_record = get_purchase(
         purchase_id,
         session["user_id"],
+        is_admin=session.get("is_admin", False),
     )
 
     if purchase_record is None:
@@ -1476,6 +1655,7 @@ def buyer_view(purchase_id):
     purchase_record = get_purchase(
         purchase_id,
         session["user_id"],
+        is_admin=session.get("is_admin", False),
     )
 
     if purchase_record is None:
@@ -1719,4 +1899,11 @@ def server_error(error):
 # ============================================================
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    # NEVER hardcode debug=True — the Werkzeug debugger it enables lets
+    # anyone who can reach the server run arbitrary Python. This only
+    # matters if you ever run `python app.py` directly against the
+    # internet; your Render deployment uses gunicorn (see the deploy
+    # steps), which doesn't go through this block at all. Still, keep
+    # this off by default so a stray `python app.py` on a public box
+    # can't accidentally expose the debugger.
+    app.run(debug=os.environ.get("FLASK_DEBUG", "0") == "1")
